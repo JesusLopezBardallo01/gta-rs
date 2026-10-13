@@ -26,6 +26,9 @@
 //!   - Las lineas vacias no se registran en el log (el original las ignora igualmente).
 //!   - Si el `.dat` no se puede abrir, se registra en el log y se sale (el original crashea).
 
+mod ide;
+mod ipl;
+
 use super::{call_virtual0, global};
 use crate::hooks::{Hook, Kind};
 use crate::log;
@@ -256,7 +259,20 @@ unsafe fn before_first_ipl() {
     log!("  -- fin de la inicializacion --");
 }
 
+/// Copia una linea de `LoadLine` (buffer estatico compartido) a memoria propia.
+/// Devuelve `None` al final del fichero.
+unsafe fn next_line(file: *mut c_void) -> Option<Vec<u8>> {
+    let p = load_line(file);
+    if p.is_null() {
+        None
+    } else {
+        Some(CStr::from_ptr(p).to_bytes().to_vec())
+    }
+}
+
 pub fn register(v: &mut Vec<Hook>) {
+    ide::register(v);
+    ipl::register(v);
     v.push(Hook {
         name: "CFileLoader::LoadLevel",
         addr: addr::LOAD_LEVEL,

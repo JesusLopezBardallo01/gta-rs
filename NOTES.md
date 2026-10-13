@@ -111,6 +111,21 @@ Las lineas del .dat llegan con un espacio final; Windows lo ignora al abrir fich
 
 `IMG MODELS\GTA_INT.IMG` se ignora a proposito en el original (comparacion exacta).
 
+## LoadObjectTypes (0x5B8400) y LoadScene (0x5B8700), sin verificar
+
+- Ambas abren con `"rb"` (0x859C6C). Cabeceras de 4 letras solo fuera de seccion; `end` (3) cierra.
+- IDE: `objs`=1, `tobj`=3, `weap`=4, `hier`=5, `anim`=6, `cars`=7, `peds`=8, `path`=9, `2dfx`=10,
+  `txdp`=11 (2 sin usar). Calcula id min/max de modelos sin usarlos. `path`: `LoadPathHeader` 0x5B41C0
+  y 12 nodos con `LoadPedPathNode` 0x5B41F0 / `LoadCarPathNode` 0x5B4380 (agua = 4o arg).
+- IPL: `path`=1 (la primera linea de datos termina la lectura), `inst`=2, `mult`=3, `zone`=4,
+  `cull`=5, `occl`=6, (7 sin cabecera, codigo muerto), `grge`=8, `enex`=9, `pick`=10, `cars`=11,
+  `jump`=12, `tcyc`=13, `auzo`=14.
+- Instancias de `inst` en `0xBCC0E0` (CEntity*[]), contador `0xBCC0D8`. Sin comprobacion de limite.
+- Final de LoadScene: `CIplStore::GetNewIplEntityIndexArray` 0x404780, `GetIplEntityIndexArray`
+  0x4047B0, `SetupRelatedIpls` 0x404DE0, `LinkLods` 0x5B51E0, `RemoveRelatedIpls` 0x405110.
+- El tramo final de LoadObjectTypes salta a 0x403990 (`add esp,0x110; jmp ret`): el exe HOODLUM
+  tiene trozos de codigo movidos a 0x401000-0x40xxxx (restos del SecuROM). Cuidado al desensamblar.
+
 ## Observaciones
 
 - `CTimer::Update` en Rust probada (2026-10-13): tiempo, frames y pausa correctos. Con el
