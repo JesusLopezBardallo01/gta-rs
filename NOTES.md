@@ -59,6 +59,10 @@ Sacadas del desensamblado de `CTimer::Update` (0x561B10-0x561C6E), ver `src/game
 
 ## Observaciones
 
+- `CTimer::Update` en Rust probada (2026-10-13): tiempo, frames y pausa correctos. Con el
+  limitador activado: fps=30, timestep=1.667 (33 ms / 20 ms). Sin limitador, `game_FPS` sale
+  1000 o `inf` porque varios frames caen en el mismo milisegundo (el original hace lo mismo).
+
 - El juego iba a ~275 fps (limitador de frames desactivado). SA tiene fallos de fisica por
   encima de 30 fps: conviene activar el limitador en Opciones > Pantalla.
 - El ASI Loader tiene que ser la version Win32 (`dinput8.dll`); la x64 se ignora en silencio.
