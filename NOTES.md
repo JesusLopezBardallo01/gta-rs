@@ -7,6 +7,12 @@
   `15e3cfedba9a841df67d8194e7249afb493b0e10d6138fb8ebab2c136e543efb`.
   No coincide con ninguna firma de plugin-sdk. **No soportada.**
 - Objetivo: `gta_sa.exe` 1.0 US, base fija `0x400000`. Firma: `*(u32*)0x82457C == 0x94BF`.
+- **Instalado tras el downgrade (2026-10-13):** `gta_sa.exe` (y copia `gta-sa.exe`, que es la que lanza Steam),
+  14.383.616 bytes, timestamp `0x427101CA` (2005-04-28), sin ASLR, seccion `.HOODLUM` (exe "compact" sin cifrar).
+  MD5 `170b3a9108687b26da2d8901c6948a18`. Firma 1.0 US comprobada en el fichero: OK.
+- Bytes en `CTimer::Update` (0x561B10): `8B0D28CBB700 83EC0C 85C9 0F84...`
+  (`mov ecx,[0xB7CB28]` / `sub esp,0Ch` / `test ecx,ecx` / `jz`): empieza en limite de instruccion,
+  la primera instruccion (6 bytes) cubre el `jmp` de 5. Encaja con el inicio de una funcion.
 
 ## Convenciones de llamada (x86, MSVC 2003 del juego original)
 
