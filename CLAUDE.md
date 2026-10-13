@@ -13,3 +13,6 @@ compila con `build.ps1`, prueba en el juego y devuelve `gta_rs.log`.
 - No se puede compilar para Windows en el entorno de Claude: como minimo `cargo check --target
   x86_64-unknown-linux-gnu` y `cargo clippy` antes de cada commit.
 - Nunca incluir assets ni codigo del juego en el repositorio.
+- `extern "thiscall"` no compila en x86_64: usa `game::call_virtual0` o un `#[cfg(target_arch = "x86")]`
+  como alli, para que `cargo check` en el host siga funcionando.
+- Funciones originales: declararlas con `original_cdecl!` (ver `src/game/mod.rs`).

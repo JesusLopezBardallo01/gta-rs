@@ -18,10 +18,13 @@ Estados: `original` → `envuelta` (Wrap, llama a la original) → `reescrita` (
 |---|---|---|---|---|
 | CTimer | Update | 0x561B10 | verificada | traducida del ensamblador; probada jugando, en pausa y con limitador |
 | CTimer | UpdateVariables | 0x5618D0 | original | la llama Update |
+| CFileLoader | LoadLevel | 0x5B9030 | reescrita | parser de DEFAULT.DAT / GTA.DAT, pendiente de probar |
 
 ## Siguiente
 
 - [x] Probar la primera DLL en el juego
 - [x] Probar CTimer::Update reescrita (primer hook `Replace`)
+- [ ] Probar CFileLoader::LoadLevel reescrita
+- [ ] Carga de datos: LoadObjectTypes (IDE), LoadScene (IPL), LoadLine, CFileMgr
 - [ ] Reescribir CTimer completo (Update, Initialise, Suspend/Resume, GetCurrentTimeInCycles...)
-- [ ] Elegir el primer sistema grande a atacar
+- [x] Elegir el primer sistema grande: carga de datos y mapa (camino hacia Vice City)

@@ -35,6 +35,7 @@ pub struct Hook {
 fn registry() -> Vec<Hook> {
     let mut v = Vec::new();
     game::timer::register(&mut v);
+    game::file_loader::register(&mut v);
     v
 }
 

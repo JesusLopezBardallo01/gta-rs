@@ -57,7 +57,26 @@ Sacadas del desensamblado de `CTimer::Update` (0x561B10-0x561C6E), ver `src/game
 | `m_snTimeInMillisecondsNonClipped` | 0xB7CB80 | |
 | constantes 1000.0 / 2^32 | 0x858C4C / 0x858C54 | leidas del exe |
 
-## Observaciones
+## Mapa de funciones de CTimer (desensamblado, sin verificar)
+
+Bloque 0x5617A0-0x561B07. Para la tarea "terminar CTimer".
+
+| Direccion | Que hace (segun el ensamblador) | Nombre probable |
+|---|---|---|
+| 0x5617A0 | QueryPerformanceCounter -> u64 | `GetCurrentTimeInCyclesQPC` (timer function) |
+| 0x5617C0 | call 0x619410 (timeGetTime?), edx=0 | timer function sin QPC |
+| 0x5617E0 | pone a 0 contadores/historial, escalas a 1.0, elige funcion de reloj (QPC o la otra), divisor = freq/1000 | `Initialise` |
+| 0x5618C0 | `[B7CB40] = 0` | `Shutdown` / fin de frame |
+| 0x5618D0 | delta->ms, timestep (min 0.00001, max 3.0?), recorte a 300 ms | `UpdateVariables(float)` |
+| 0x5619D0 | si B7CB40: ++B7CB44; si ==1 guarda reloj en B7CB30 | `Suspend` |
+| 0x561A00 | si B7CB40 y --B7CB44==0: oldPcTimer += reloj - B7CB30 | `Resume` |
+| 0x561A40 | devuelve divisor (B7CB2C) | `GetCyclesPerMillisecond` |
+| 0x561A50 | ftol(divisor * const 0x858BA4) | `GetCyclesPerFrame` |
+| 0x561A80 | QPC - oldPcTimer (u32) | `GetCurrentTimeInCycles` |
+| 0x561AA0 | historial = tiempo actual, B7CB40 = 0 | `StartUserPause`? / `ResetHistory` |
+| 0x561AD0 | `ms_fTimeScale < const 0x858624` | `GetIsSlowMotionActive` |
+| 0x561AF0 / 0x561B00 | `m_UserPause = 1 / 0` | `StartUserPause` / `EndUserPause` |
+
 
 - `CTimer::Update` en Rust probada (2026-10-13): tiempo, frames y pausa correctos. Con el
   limitador activado: fps=30, timestep=1.667 (33 ms / 20 ms). Sin limitador, `game_FPS` sale
