@@ -77,6 +77,41 @@ Bloque 0x5617A0-0x561B07. Para la tarea "terminar CTimer".
 | 0x561AD0 | `ms_fTimeScale < const 0x858624` | `GetIsSlowMotionActive` |
 | 0x561AF0 / 0x561B00 | `m_UserPause = 1 / 0` | `StartUserPause` / `EndUserPause` |
 
+## CFileLoader::LoadLevel (0x5B9030), sin verificar
+
+Funciones a las que llama (nombres de gta-reversed; los "probable" deducidos por contexto
+y por los textos de la pantalla de carga):
+
+| Direccion | Funcion |
+|---|---|
+| 0x538900 / 0x5389D0 | `CFileMgr::OpenFile(path, "r")` / `CloseFile` |
+| 0x536F80 | `CFileLoader::LoadLine(FILE*)` -> buffer estatico ya limpio |
+| 0x53DED0 | `LoadingScreen(titulo, msg, msg2)` |
+| 0x5B3680 | `LoadingScreenLoadingFile(path)` |
+| 0x5B3860 / 0x5B38F0 | `LoadTexDictionary(path)` / `AddTextureCB` |
+| 0x407610 | `CStreaming::AddImageToList(path, notPlayerImg)` |
+| 0x5B4E60 | `LoadCollisionFile(path, colId)` |
+| 0x5B39D0 / 0x5B3A30 | `LoadAtomicFile` / `LoadClumpFile` |
+| 0x5B8400 / 0x5B8700 | `LoadObjectTypes` (IDE) / `LoadScene` (IPL) |
+| 0x5B57C0 | `MatchAllModelStrings` (probable) |
+| 0x5B5360 | `CObjectData::Initialise("DATA\\OBJECT.DAT", false)` |
+| 0x5B8F00 | `CVehicleModelInfo::SetupCommonData` (probable, "Setup vehicle info data") |
+| 0x5B8AD0 | `CStreaming::Init2` (probable, "Streaming Init") |
+| 0x590D00 | pantalla de carga, avance (probable) |
+| 0x4113D0 | `CColStore::LoadAllBoundingBoxes` (probable, "Collision") |
+| 0x405780 / 0x410EC0 / 0x6F7440 / 0x410E00 | al final si hubo IPL: `CIplStore::LoadAllRemainingIpls`, `CColStore::BoundingBoxesPostProcess`, `CTrain::InitTrains`, `CColStore::RemoveAllCollision` (probables) |
+| 0x7F3A90 / 0x7F3600 / 0x7F3A70 / 0x7F3730 / 0x7F36A0 | RenderWare: `RwTexDictionaryGetCurrent` / `Create` / `SetCurrent` / `ForAllTextures` / `Destroy` |
+| 0xB71670 | `gString[256]` |
+| 0xA9B0C8..0xAAE948 | `CModelInfo::ms_modelInfoPtrs`; vtable +0x34 = `ConvertAnimFileIndex` |
+
+**Ojo:** `LoadLine` devuelve un buffer estatico compartido. Cualquier funcion que lea otro
+fichero (p. ej. `CObjectData::Initialise` antes del primer IPL) lo sobrescribe: hay que
+copiar la linea nada mas leerla. El primer crash del proyecto (2026-10-13) fue por esto.
+Las lineas del .dat llegan con un espacio final; Windows lo ignora al abrir ficheros.
+
+`IMG MODELS\GTA_INT.IMG` se ignora a proposito en el original (comparacion exacta).
+
+## Observaciones
 
 - `CTimer::Update` en Rust probada (2026-10-13): tiempo, frames y pausa correctos. Con el
   limitador activado: fps=30, timestep=1.667 (33 ms / 20 ms). Sin limitador, `game_FPS` sale
