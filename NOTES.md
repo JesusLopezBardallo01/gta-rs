@@ -57,7 +57,7 @@ Sacadas del desensamblado de `CTimer::Update` (0x561B10-0x561C6E), ver `src/game
 | `m_snTimeInMillisecondsNonClipped` | 0xB7CB80 | |
 | constantes 1000.0 / 2^32 | 0x858C4C / 0x858C54 | leidas del exe |
 
-## Mapa de funciones de CTimer (desensamblado, sin verificar)
+## Mapa de funciones de CTimer (reescrito entero, ver `src/game/timer.rs`)
 
 Bloque 0x5617A0-0x561B07. Para la tarea "terminar CTimer".
 
@@ -125,6 +125,20 @@ Las lineas del .dat llegan con un espacio final; Windows lo ignora al abrir fich
   0x4047B0, `SetupRelatedIpls` 0x404DE0, `LinkLods` 0x5B51E0, `RemoveRelatedIpls` 0x405110.
 - El tramo final de LoadObjectTypes salta a 0x403990 (`add esp,0x110; jmp ret`): el exe HOODLUM
   tiene trozos de codigo movidos a 0x401000-0x40xxxx (restos del SecuROM). Cuidado al desensamblar.
+
+## CTimer: detalles del desensamblado
+
+- `Initialise` (0x5617E0) empieza con `xor eax,eax; jmp 0x401220`: el trozo movido por HOODLUM
+  hace `m_UserPause = 0` y vuelve a 0x5617E7.
+- Constantes: 0.05 (0x858C28, ms -> timestep), 0.01 (0x858C58, minimo sin pausa), 3.0 (0x858B3C,
+  maximo), 0.00001 (0x858C14, minimo absoluto), 20.0 (0x858BA4, ms por frame nominal), 1.0
+  (0x858624, umbral de camara lenta).
+- `RsTimer` 0x745270 (via thunk 0x619410). Imports: QPC 0x8580C8, QPF 0x858114.
+- 0xB7CB40 es "reloj activo": Update lo pone a 1; Initialise/Shutdown/Stop a 0; Suspend/Resume
+  no hacen nada si es 0. 0xB7CB44 = profundidad de Suspend, 0xB7CB30 = reloj al suspender.
+- 0xC7C714: byte de otra clase; si es != 0 no se fuerza el timestep minimo de 0.01. Sin identificar.
+- Los calculos se hacen en f32 (el original usa x87; con D3D9 sin FPU_PRESERVE la FPU queda en
+  precision simple, asi que deberia coincidir).
 
 ## Observaciones
 
