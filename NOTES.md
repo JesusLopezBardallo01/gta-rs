@@ -25,16 +25,44 @@
 Las estructuras compartidas con el código original van en `#[repr(C)]` con tamaño
 comprobado (`const _: () = assert!(size_of::<CPed>() == 0x7A4);`).
 
+## Direcciones verificadas
+
+Confirmadas en el juego con `gta_rs.log` (2026-10-13): el hook envuelto se ejecuto en cada
+frame, `m_FrameCounter` == llamadas + 1, el tiempo se congela con el juego en pausa.
+
+| Simbolo | Direccion | Como se verifico |
+|---|---|---|
+| `CTimer::Update` | 0x561B10 | hook ejecutado cada frame |
+| `CTimer::m_snTimeInMilliseconds` | 0xB7CB84 | avanza en juego, se para en pausa |
+| `CTimer::m_FrameCounter` | 0xB7CB4C | coincide con el numero de llamadas |
+| `CTimer::ms_fTimeStep` | 0xB7CB5C | ~0.15 a ~275 fps (1.0 = 1/50 s), 0 en pausa |
+
 ## Direcciones pendientes de verificar en juego
 
-Tomadas de gta-reversed; se marcan como verificadas cuando el log lo confirme.
+Sacadas del desensamblado de `CTimer::Update` (0x561B10-0x561C6E), ver `src/game/timer.rs`.
 
-| Símbolo | Dirección | Verificada |
+| Simbolo | Direccion | Notas |
 |---|---|---|
-| `CTimer::Update` | 0x561B10 | no |
-| `CTimer::m_snTimeInMilliseconds` | 0xB7CB84 | no |
-| `CTimer::m_FrameCounter` | 0xB7CB4C | no |
-| `CTimer::ms_fTimeStep` | 0xB7CB5C | no |
+| `CTimer::UpdateVariables(float)` | 0x5618D0 | cdecl, arg en [esp+4] |
+| `ms_fnTimerFunction` | 0xB7CB28 | devuelve u64 en edx:eax |
+| `m_snTimerDivider` | 0xB7CB2C | ticks por ms |
+| `m_snPreviousTimer` (oldPcTimer) | 0xB7CB38 | u64 |
+| `unk_B7CB40` | 0xB7CB40 | u8: Update pone 1, 0x5618C0 pone 0 |
+| `m_CodePause` / `m_UserPause` | 0xB7CB48 / 0xB7CB49 | bool |
+| `game_FPS` | 0xB7CB50 | f32 = 1000 / (NonClipped - PrevNonClipped) |
+| `ms_fTimeScale` | 0xB7CB64 | f32 |
+| `m_snPreviousTimeInMillisecondsNonClipped` | 0xB7CB68 | |
+| `m_snPPPP/PPP/PP/PreviousTimeInMilliseconds` | 0xB7CB6C / 70 / 74 / 78 | historial |
+| `m_snTimeInMillisecondsPauseMode` | 0xB7CB7C | |
+| `m_snTimeInMillisecondsNonClipped` | 0xB7CB80 | |
+| constantes 1000.0 / 2^32 | 0x858C4C / 0x858C54 | leidas del exe |
+
+## Observaciones
+
+- El juego iba a ~275 fps (limitador de frames desactivado). SA tiene fallos de fisica por
+  encima de 30 fps: conviene activar el limitador en Opciones > Pantalla.
+- El ASI Loader tiene que ser la version Win32 (`dinput8.dll`); la x64 se ignora en silencio.
+- Raton y resoluciones altas en Windows moderno: SilentPatch.
 
 ## Referencias
 
