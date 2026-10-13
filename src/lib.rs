@@ -11,6 +11,7 @@
 #![allow(clippy::missing_safety_doc, clippy::not_unsafe_ptr_arg_deref)]
 
 pub mod config;
+pub mod crash;
 pub mod game;
 pub mod hooks;
 pub mod log;
@@ -35,6 +36,7 @@ pub extern "system" fn DllMain(module: HINSTANCE, reason: u32, _reserved: *mut c
 fn init() {
     log::init("gta_rs.log");
     log!("gta-rs {} cargado", env!("CARGO_PKG_VERSION"));
+    crash::install();
 
     let ver = version::detect();
     log!("Version del juego detectada: {}", ver.describe());

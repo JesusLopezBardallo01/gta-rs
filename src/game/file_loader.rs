@@ -23,6 +23,7 @@
 //! Diferencias con el original (a proposito):
 //!   - Las rutas no se copian a un buffer de 64 bytes en la pila (el original desborda si
 //!     la ruta es larga).
+//!   - Las lineas vacias no se registran en el log (el original las ignora igualmente).
 //!   - Si el `.dat` no se puede abrir, se registra en el log y se sale (el original crashea).
 
 use super::{call_virtual0, global};
@@ -135,8 +136,12 @@ pub extern "C" fn load_level(filename: *const c_char) {
             if p.is_null() {
                 break;
             }
-            let line = CStr::from_ptr(p).to_bytes();
-            if line.first() == Some(&b'#') {
+            // `LoadLine` devuelve un buffer estatico que se reutiliza: hay que copiar la
+            // linea ya, porque las funciones que llamamos (p. ej. CObjectData::Initialise
+            // antes del primer IPL) leen otros ficheros y lo sobrescriben.
+            let owned = CStr::from_ptr(p).to_bytes().to_vec();
+            let line = owned.as_slice();
+            if line.first() == Some(&b'#') || line.is_empty() {
                 continue;
             }
             log!("  {}", String::from_utf8_lossy(line));
@@ -222,6 +227,7 @@ pub extern "C" fn load_level(filename: *const c_char) {
 
 /// Lo que hace el original justo antes de cargar el primer IPL.
 unsafe fn before_first_ipl() {
+    log!("  -- inicializacion previa al primer IPL --");
     match_all_model_strings();
 
     loading_screen_loading_file(c"Object Data".as_ptr());
@@ -236,6 +242,7 @@ unsafe fn before_first_ipl() {
 
     loading_screen_loading_file(c"Collision".as_ptr());
     col_store_load_all_bounding_boxes();
+    log!("  -- ConvertAnimFileIndex --");
 
     // CBaseModelInfo::ConvertAnimFileIndex() para todos los modelos registrados
     let mut p = addr::MODEL_INFO_PTRS;
@@ -246,6 +253,7 @@ unsafe fn before_first_ipl() {
         }
         p += 4;
     }
+    log!("  -- fin de la inicializacion --");
 }
 
 pub fn register(v: &mut Vec<Hook>) {
