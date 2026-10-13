@@ -1,0 +1,30 @@
+[package]
+name = "gta-rs"
+version = "0.1.0"
+edition = "2021"
+description = "Reimplementacion incremental de GTA San Andreas (1.0 US) en Rust"
+publish = false
+
+[lib]
+name = "gta_rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+iced-x86 = { version = "1.21", default-features = false, features = ["std", "decoder", "encoder", "block_encoder"] }
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Memory",
+    "Win32_System_SystemServices",
+    "Win32_System_Diagnostics_Debug",
+    "Win32_System_Threading",
+] }
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+opt-level = 2
+debug = true          # simbolos (.pdb) para depurar crasheos
+lto = "thin"
