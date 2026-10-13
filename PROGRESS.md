@@ -31,6 +31,15 @@ Estados: `original` → `envuelta` (Wrap, llama a la original) → `reescrita` (
 
 ## Siguiente
 
+Plan acordado (2026-10-13), en este orden:
+1. **Pruebas diferenciales**: modo en el que la DLL ejecuta la funcion original y la de Rust con
+   las mismas entradas y escribe en el log si los resultados difieren. Objetivo: validar muchas
+   funciones por partida sin depender de pruebas manuales una a una.
+2. `CFileLoader::LoadObject` y `LoadObjectInstance` (requiere `CEntity` y `CBaseModelInfo` en Rust).
+3. Resto del sistema de carga del mapa (IPL binarios, streaming, colisiones), hito previo a Vice City.
+4. `LoadLine` (pequena, opcional).
+
+
 - [x] Probar la primera DLL en el juego
 - [x] Probar CTimer::Update reescrita (primer hook `Replace`)
 - [x] Probar CFileLoader::LoadLevel reescrita
